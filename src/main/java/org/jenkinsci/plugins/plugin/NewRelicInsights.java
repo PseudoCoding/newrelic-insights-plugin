@@ -80,15 +80,19 @@ public class NewRelicInsights extends Builder implements SimpleBuildStep {
 
         org.jenkinsci.plugins.plugin.newrelic.NewRelicInsights insights = getClient();
         InsightsCredentials creds = getInsightsCredentials(this.credentialsId, build);
-        try {
-            if (insights.sendCustomEvent(creds.getApiKey().getPlainText(), creds.getAccountId(), json, keyValues)) {
-                listener.getLogger().println("New Relic Insights: Success, inserted custom event.");
-            } else {
-                listener.getLogger().println("New Relic Insights: Failure, did not insert custom event.");
+        if (creds != null) {
+            try {
+                if (insights.sendCustomEvent(creds.getApiKey().getPlainText(), creds.getAccountId(), json, keyValues)) {
+                    listener.getLogger().println("New Relic Insights: Success, inserted custom event.");
+                } else {
+                    listener.getLogger().println("New Relic Insights: Failure, did not insert custom event.");
+                }
+            } catch(IOException ex) {
+                listener.getLogger().println("New Relic Insights: Failure, exception thrown.");
+                listener.error(ex.getMessage(), ex);
             }
-        } catch(IOException ex) {
-            listener.getLogger().println("New Relic Insights: Failure, exception thrown.");
-            listener.error(ex.getMessage(), ex);
+        } else {
+            listener.getLogger().println("New Relic Insights: Failed to retrieve credentials (ID: " + this.credentialsId + " ).");
         }
     }
 
